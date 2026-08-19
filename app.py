@@ -61,9 +61,16 @@ def sos():
             print("✅ Discord notification sent! Yippee! ✅✅✅")
             return "SOS received!", 200
 
-        elif response.status_code == 429:
-            print("⚠️⚠️⚠️ Discord rate limit reached.")
-            return "SOS received, but Discord is rate limited.", 429
+      elif response.status_code == 429:
+    print("⚠️ Discord rate limit reached.")
+
+    try:
+        retry_after = response.json().get("retry_after")
+        print("⏳ Discord says retry after:", retry_after, "seconds")
+    except Exception:
+        print("Could not determine retry time.")
+
+    return "SOS received, but Discord is rate limited.", 429
 
         else:
             print("❌❌❌❌ Discord returned:", response.text)
@@ -92,46 +99,7 @@ def reset():
 
     return "SOS reset!", 200
     
-@app.route("/discord-test")
-def discord_test():
-    try:
-        response = requests.get(
-            "https://discord.com",
-            timeout=10
-        )
 
-        print("Discord homepage status:", response.status_code)
-
-        return f"Discord reachable: {response.status_code}", 200
-
-    except Exception as e:
-        print("Discord connection error:", repr(e))
-        return "Could not reach Discord.", 500
-
-@app.route("/discord-test-webhook")
-def discord_test_webhook():
-    webhook_url = os.environ.get("POCKEYWEB")
-
-    if not webhook_url:
-        return "Webhook URL missing", 500
-
-    try:
-        response = requests.post(
-            webhook_url,
-            json={
-                "content": "🧪 Discord connection test!"
-            },
-            timeout=15
-        )
-
-        print("Webhook status:", response.status_code)
-        print("Webhook response:", response.text)
-
-        return f"Webhook returned: {response.status_code}", 200
-
-    except Exception as e:
-        print("Webhook error:", repr(e))
-        return "Webhook connection failed.", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
