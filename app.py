@@ -24,7 +24,7 @@ def sos():
     sos_active = True
     sos_time = datetime.now().strftime("%H:%M:%S")
 
-    discord_url = os.environ.get("DISCORD_WEBHOOK_URL")
+    discord_url = os.environ.get("POCKEYWEB")
 
     if not discord_url:
         print("❌ Discord webhook URL is missing!")
