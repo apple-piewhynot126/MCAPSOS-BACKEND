@@ -62,15 +62,15 @@ def sos():
             return "SOS received!", 200
 
       elif response.status_code == 429:
-    print("⚠️ Discord rate limit reached.")
+            print("⚠️ Discord rate limit reached.")
 
-    try:
-        retry_after = response.json().get("retry_after")
-        print("⏳ Discord says retry after:", retry_after, "seconds")
-    except Exception:
-        print("Could not determine retry time.")
+            try:   
+                retry_after = response.json().get("retry_after")
+                print("⏳ Discord says retry after:", retry_after, "seconds")
+            except Exception:
+                print("Could not determine retry time.")
 
-    return "SOS received, but Discord is rate limited.", 429
+            return "SOS received, but Discord is rate limited.", 429
 
         else:
             print("❌❌❌❌ Discord returned:", response.text)
