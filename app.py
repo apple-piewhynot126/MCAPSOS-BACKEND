@@ -9,16 +9,20 @@ def home():
 
 @app.route("/sos", methods=["POST"])
 def sos():
-    print("🚨 SOS RECEIVED!")
+    print("🚨 SOS RECEIVED!🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨")
+
     webhook_url = os.environ.get("POCKET_ALERT_WEBHOOK")
+    print("Pocket Alert webhook configured:", webhook_url is not None)
 
     try:
         response = requests.post(
             webhook_url,
             json={
-                "level": "high" 
+                "level": "high"
             },
-            timeout=10  )
+            timeout=10
+        )
+
         print("Pocket Alert response:", response.status_code)
         print(response.text)
 
