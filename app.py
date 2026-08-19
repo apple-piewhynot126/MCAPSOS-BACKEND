@@ -11,7 +11,7 @@ def home():
 def sos():
     print("🚨 SOS RECEIVED!🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨")
 
-    webhook_url = os.environ.get("POCKET_ALERT_WEBHOOK")
+    webhook_url = os.environ.get("POCKEYWEB")
     print("Pocket Alert webhook configured:", webhook_url is not None)
 
     try:
