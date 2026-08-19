@@ -75,7 +75,22 @@ def reset():
     print("SOS STATUS RESET")
 
     return "SOS reset!", 200
+    
+@app.route("/discord-test")
+def discord_test():
+    try:
+        response = requests.get(
+            "https://discord.com",
+            timeout=10
+        )
 
+        print("Discord homepage status:", response.status_code)
+
+        return f"Discord reachable: {response.status_code}", 200
+
+    except Exception as e:
+        print("Discord connection error:", repr(e))
+        return "Could not reach Discord.", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
