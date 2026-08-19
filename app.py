@@ -21,32 +21,31 @@ def sos():
 
     print("🚨 SOS RECEIVED!")
 
-    # Turn the website's SOS status ON
     sos_active = True
     sos_time = datetime.now().strftime("%H:%M:%S")
 
-    # Send notification to Pocket Alert
-    webhook_url = os.environ.get("POCKEYWEB")
+    discord_url = os.environ.get("POCKEYWEB")
 
     try:
         response = requests.post(
-            webhook_url,
+            discord_url,
             json={
-                "level": "high"
+                "content": "🚨 **SOS ALERT!**\nThe emergency button has been pressed!"
             },
             timeout=10
         )
 
-        print("Pocket Alert response:", response.status_code)
+        print("Discord response:", response.status_code)
         print(response.text)
 
-        return "SOS received!", 200
-    except Exception as e:
-        print("Pocket Alert error:", e)
+        if response.status_code == 204:
+            return "SOS received!", 200
+        else:
+            return "SOS received, but Discord notification failed.", 500
 
-        # The website still knows about the SOS
-        # even if Pocket Alert fails.
-        return "SOS received, but notification failed.", 500
+    except Exception as e:
+        print("Discord error:", e)
+        return "SOS received, but Discord notification failed.", 500
 
 
 @app.route("/status")
