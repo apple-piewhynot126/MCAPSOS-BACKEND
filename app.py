@@ -56,15 +56,14 @@ def sos():
             timeout=10  )
         print("Discord response:", response.status_code)
 
-
         if response.status_code == 204:
-            print("✅ Discord notification sent! Yippee! ✅✅✅")
+            print("✅ Discord notification sent!")
             return "SOS received!", 200
 
-      elif response.status_code == 429:
+        elif response.status_code == 429:
             print("⚠️ Discord rate limit reached.")
 
-            try:   
+            try:
                 retry_after = response.json().get("retry_after")
                 print("⏳ Discord says retry after:", retry_after, "seconds")
             except Exception:
@@ -73,12 +72,12 @@ def sos():
             return "SOS received, but Discord is rate limited.", 429
 
         else:
-            print("❌❌❌❌ Discord returned:", response.text)
-            return "SOS received, but Discord notification failed. Awh so sad", 500
+            print("❌ Discord returned:", response.text)
+            return "SOS received, but Discord notification failed.", 500
 
     except requests.exceptions.RequestException as e:
         print("❌ Discord connection error:❌❌❌", e)
-        return "SOS received, but Discord could not be reached.", 500
+        return "SOS received, but Discord could not be reached. SO SADD", 500
 
 @app.route("/status")
 def status():
