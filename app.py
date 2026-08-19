@@ -59,7 +59,7 @@ def sos():
             timeout=10
         )
 
-        if response.status_code == 204:
+        if response.status_code in [200, 204]:
             print("✅ Discord notification sent!")
             return "SOS received!", 200
 
