@@ -94,7 +94,7 @@ def discord_test():
 
 @app.route("/discord-test-webhook")
 def discord_test_webhook():
-    webhook_url = os.environ.get("https://discord.com/api/webhooks/1539635541803278416/ua99UwHH3dddDLKxSFD68c8uK1WijdH3shiS4OdRfW1mLiV73tx_4t4Z4u5irYefoaFe")
+    webhook_url = os.environ.get("POCKEYWEB")
 
     if not webhook_url:
         return "Webhook URL missing", 500
