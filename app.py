@@ -2,25 +2,40 @@ from flask import Flask, render_template, jsonify
 import os
 import requests
 from datetime import datetime
+import time
 
 app = Flask(__name__)
 
-# so we write notes using the hashtag!
+#so we write using the hashtag!
 sos_active = False
 sos_time = None
+
+last_sos_time = 0
+SOS_COOLDOWN = 10
 
 
 @app.route("/")
 def home():
     return render_template("webSOS.html")
 
-
 @app.route("/sos", methods=["POST"])
 def sos():
-    global sos_active, sos_time
+    global sos_active, sos_time, last_sos_time
 
     print("🚨 SOS RECEIVED!")
 
+    current_time = time.time()
+
+    # Check whether we're still in the cooldown period
+    if current_time - last_sos_time < SOS_COOLDOWN:
+        print("⚠️ SOS ignored because cooldown is active.")
+
+        sos_active = True
+
+        return "SOS already active.", 200
+
+    # Record this SOS
+    last_sos_time = current_time
     sos_active = True
     sos_time = datetime.now().strftime("%H:%M:%S")
 
@@ -34,12 +49,13 @@ def sos():
         response = requests.post(
             discord_url,
             json={
-                "content": "🚨 **SOS ALERT!**\nThe emergency button has been pressed!"
+                "content":
+                "🚨 **SOS ALERT!**\n"
+                "The emergency button has been pressed!"
             },
-            timeout=10
-        )
-
+            timeout=10  )
         print("Discord response:", response.status_code)
+
 
         if response.status_code == 204:
             print("✅ Discord notification sent! Yippee! ✅✅✅")
