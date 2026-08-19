@@ -1,10 +1,133 @@
 <!DOCTYPE html>
-<html><head>
-<title>T.U.T.E.L.A. RESEARCH PROJECT 2026</title></head>
-<body><h1>SOS SYSTEM</h1>
+<html>
+<head>
 
-<h2>T.U.T.E.L.A. RESEARCH PROJECT 2026</h1>Miaesha Addun, Mark Gabay, and Francheska Lasala from 9-DARWIN, SJCSHS.           Hello, world!<br>Status: Online!<br> May God bless you.</h2>
+    <title>T.U.T.E.L.A. RESEARCH PROJECT 2026r</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 80px;
+            background: #f4f4f4;
+        }
+
+        #status {
+            font-size: 60px;
+            font-weight: bold;
+        }
+
+        #message {
+            font-size: 28px;
+            margin-top: 20px;
+        }
+
+        #time {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        button {
+            font-size: 20px;
+            padding: 12px 25px;
+            margin-top: 30px;
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <h1>SOS SYSTEM</h1>
+
+    <div id="status">
+        🟢 SAFE
+    </div>
+
+    <div id="message">
+        SOS System is monitoring.
+    </div>
+
+    <div id="time">
+        No SOS detected.
+    </div>
+
+    <button onclick="resetSOS()">
+        Reset SOS
+    </button>
+
+
+    <script>
+
+        function checkStatus() {
+
+            fetch("/status")
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data.sos === true) {
+
+                        document.getElementById("status").innerHTML =
+                            "🚨 SOS ALERT";
+
+                        document.getElementById("message").innerHTML =
+                            "THE SOS BUTTON HAS BEEN PRESSED!";
+
+                        document.getElementById("time").innerHTML =
+                            "Time: " + data.time;
+
+                    }
+
+                    else {
+
+                        document.getElementById("status").innerHTML =
+                            "🟢 SAFE";
+
+                        document.getElementById("message").innerHTML =
+                            "System is monitoring.";
+
+                        document.getElementById("time").innerHTML =
+                            "No SOS detected.";
+
+                    }
+
+                })
+
+                .catch(error => {
+
+                    console.log("Error checking status:", error);
+
+                });
+
+        }
+
+
+        function resetSOS() {
+
+            fetch("/reset", {
+                method: "POST"
+            })
+            .then(() => {
+
+                checkStatus();
+
+            });
+
+        }
+
+
+        // Check the server every second
+        setInterval(checkStatus, 1000);
+
+        // Check immediately when page opens
+        checkStatus();
+<h2>Miaesha Addun, Mark Gabay, and Francheska Lasala from 9-DARWIN, SJCSHS.           Hello, world!<br>Status: Online!<br> May God bless you.</h2>
  <div></div>   <<img src="https://file.garden/Z7MaCKzvmwy_BlES/VANDORF.png" style="display: block; margin: auto;"
 ></div>
+    </script>
 
-</body></html>
+</body>
+</html>
