@@ -92,5 +92,30 @@ def discord_test():
         print("Discord connection error:", repr(e))
         return "Could not reach Discord.", 500
 
+@app.route("/discord-test-webhook")
+def discord_test_webhook():
+    webhook_url = os.environ.get("https://discord.com/api/webhooks/1539635541803278416/ua99UwHH3dddDLKxSFD68c8uK1WijdH3shiS4OdRfW1mLiV73tx_4t4Z4u5irYefoaFe")
+
+    if not webhook_url:
+        return "Webhook URL missing", 500
+
+    try:
+        response = requests.post(
+            webhook_url,
+            json={
+                "content": "🧪 Discord connection test!"
+            },
+            timeout=15
+        )
+
+        print("Webhook status:", response.status_code)
+        print("Webhook response:", response.text)
+
+        return f"Webhook returned: {response.status_code}", 200
+
+    except Exception as e:
+        print("Webhook error:", repr(e))
+        return "Webhook connection failed.", 500
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
