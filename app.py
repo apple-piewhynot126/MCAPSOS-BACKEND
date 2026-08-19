@@ -53,8 +53,11 @@ def sos():
                 "🚨 **SOS ALERT!**\n"
                 "The emergency button has been pressed!"
             },
-            timeout=10  )
-        print("Discord response:", response.status_code)
+            headers={
+                "User-Agent": "MCA-SOS/1.0"
+            },
+            timeout=10
+        )
 
         if response.status_code == 204:
             print("✅ Discord notification sent!")
