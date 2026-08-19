@@ -24,7 +24,11 @@ def sos():
     sos_active = True
     sos_time = datetime.now().strftime("%H:%M:%S")
 
-    discord_url = os.environ.get("POCKEYWEB")
+    discord_url = os.environ.get("DISCORD_WEBHOOK_URL")
+
+    if not discord_url:
+        print("❌ Discord webhook URL is missing!")
+        return "SOS received, but Discord is not configured.", 500
 
     try:
         response = requests.post(
@@ -36,17 +40,22 @@ def sos():
         )
 
         print("Discord response:", response.status_code)
-        print(response.text)
 
         if response.status_code == 204:
+            print("✅ Discord notification sent! Yippee! ✅✅✅")
             return "SOS received!", 200
+
+        elif response.status_code == 429:
+            print("⚠️⚠️⚠️ Discord rate limit reached.")
+            return "SOS received, but Discord is rate limited.", 429
+
         else:
-            return "SOS received, but Discord notification failed.", 500
+            print("❌❌❌❌ Discord returned:", response.text)
+            return "SOS received, but Discord notification failed. Awh so sad", 500
 
-    except Exception as e:
-        print("Discord error:", e)
-        return "SOS received, but Discord notification failed.", 500
-
+    except requests.exceptions.RequestException as e:
+        print("❌ Discord connection error:❌❌❌", e)
+        return "SOS received, but Discord could not be reached.", 500
 
 @app.route("/status")
 def status():
