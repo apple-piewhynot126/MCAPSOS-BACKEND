@@ -10,7 +10,7 @@ def home():
 @app.route("/sos", methods=["POST"])
 def sos():
     print("🚨 SOS RECEIVED!")
-    webhook_url = os.environ.get("POCKEYWEB")
+    webhook_url = os.environ.get("POCKET_ALERT_WEBHOOK")
 
     try:
         response = requests.post(
