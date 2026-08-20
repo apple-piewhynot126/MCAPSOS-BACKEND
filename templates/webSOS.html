@@ -55,20 +55,19 @@
        <p>You are visitor no. {{ visitor_number }}!</p>
     </div>
 
-    <button onclick="resetSOS()">
-        button that does nothing
-    </button>
+<button onclick="playSound()">Sound Button</button>
+
 <audio id="buttonSound">
     <source src="{{ url_for('static', filename='DING.mp3') }}" type="audio/mpeg">
 </audio>
 
 <script>
-document.getElementById("randomButton").addEventListener("click", function() {
+function playSound() {
     const sound = document.getElementById("buttonSound");
 
-    sound.currentTime = 0;
+    sound.currentTime = 0; // Restart sound if clicked again
     sound.play();
-});
+}
 </script>
     <div></div>   <<img src="https://file.garden/Z7MaCKzvmwy_BlES/VANDORF.png" style="display: block; margin: auto;"
 ></div>
