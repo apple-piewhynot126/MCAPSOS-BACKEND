@@ -63,7 +63,30 @@
        <p>You are visitor no. {{ visitor_number }}!</p>
     </div>
 
-<button onclick="playSound()">bell</button>
+<script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    async
+    defer>
+</script>
+
+<div
+    class="cf-turnstile"
+    data-sitekey="0x4AAAAAAEWgGlLGZ17WqfJm">
+    data-callback="turnstileVerified">
+</div>
+  
+<button id="bellButton" onclick="playSound()" disabled>
+    🔔 Bell
+</button>
+
+<script>
+let turnstilePassed = false;
+
+function turnstileVerified(token) {
+    turnstilePassed = true;
+    document.getElementById("bellButton").disabled = false;
+}
+</script>
 
 <audio id="buttonSound">
     <source src="{{ url_for('static', filename='DING.mp3') }}" type="audio/mpeg">
@@ -78,11 +101,7 @@ function playSound() {
 }
 </script>
   <p>Bell count: <span id="bellCount">0 times</span></p>
-        <script
-  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-  async
-  defer>
-</script>
+       
 
 
     <div></div>   <<img src="https://file.garden/Z7MaCKzvmwy_BlES/Hecker_Cat.webp" style="display: block; margin: auto;"
