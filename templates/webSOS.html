@@ -1,239 +1,60 @@
 <!DOCTYPE html>
-<html>
-
-<head>
-
-    <style>
-
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 80px;
-            background: #f4f4f4;
+<html><head>    <style>        body {
+            font-family: Arial, sans-serif;            text-align: center;            margin-top: 80px;            background: #f4f4f4;        }        #status {            font-size: 50px;            font-weight: bold;
         }
-
-        #status {
-            font-size: 50px;
-            font-weight: bold;
-        }
-
         #message {
             font-size: 28px;
-            margin-top: 20px;
-        }
-
-        #time {
+            margin-top: 20px;}        #time { 
             font-size: 20px;
-            margin-top: 20px;
-        }
-
-        button {
+            margin-top: 20px;}        button {
             font-size: 20px;
             padding: 12px 25px;
             margin-top: 30px;
-            cursor: pointer;
-        }
-
-        #meow {
-            font-size: 15px;
-        }
-
+            cursor: pointer;} #meow {            
+            font-size: 15px;}
     </style>
+</head><body>    <h1>T.U.T.E.L.A. RESEARCH PROJECT 2026</h1>    <div id="meow">        <h2>Miaesha Addun, Mark Gabay, and Francheska Lasala from 9-DARWIN, SJCSHS.<br> May God bless you.</h2>    </div>
+    <div id="status"> 🟢🟢 SAFE 🟢🟢    </div>
+    <div id="message">        The SOS System is monitoring.    </div>
+    <div id="time">       <p>You are visitor no. {{ visitor_number }}!</p>   </div>
 
-</head>
-
-
-<body>
-
-    <h1>T.U.T.E.L.A. RESEARCH PROJECT 2026</h1>
-
-    <div id="meow">
-        <h2>Miaesha Addun, Mark Gabay, and Francheska Lasala from 9-DARWIN, SJCSHS.<br> May God bless you.</h2>
-    </div>
-
-
-    <div id="status">
-        🟢🟢 SAFE 🟢🟢
-    </div>
-
-    <div id="message">
-        The SOS System is monitoring.
-    </div>
-
-    <div id="time">
-        <p>You are visitor no. {{ visitor_number }}!</p>
-    </div>
-
-<script>
-function turnstileVerified(token) {
+<script>function turnstileVerified(token) {
     console.log("Turnstile verified!");
     console.log("Token received:", token);
-
-    const bellButton = document.getElementById("bellButton");
-
-    bellButton.disabled = false;
-}
-</script>
-
+    const bellButton = document.getElementById("bellButton");    bellButton.disabled = false;}</script>
 <script
-    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-    async
-    defer>
-</script>
-    <!-- TURNSTILE SCRIPT -->
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js"    async    defer></script>
+<script    src="https://challenges.cloudflare.com/turnstile/v0/api.js"    async    defer></script>
+    <div        class="cf-turnstile"        data-sitekey="0x4AAAAAAEWgGlLGZ17WqfJm"        data-callback="turnstileVerified">    </div>
 
-<script
-    src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-    async
-    defer>
-</script>
+    <button        id="bellButton"   onclick="playSound()"        disabled>
+        🔔     </button>
 
-
-    <div
-        class="cf-turnstile"
-        data-sitekey="0x4AAAAAAEWgGlLGZ17WqfJm"
-        data-callback="turnstileVerified">
-    </div>
-
-
-    <button
-        id="bellButton"
-        onclick="playSound()"
-        disabled>
-
-        🔔 Bell
-
-    </button>
-
-    <p>
-        Bell count:
-        <span id="bellCount">0 times</span>
-    </p>
-
-
-    <!-- AUDIO -->
+    <p>        Bell count:        <span id="bellCount">0 times</span>    </p>
 
     <audio id="buttonSound">
-
         <source
             src="{{ url_for('static', filename='DING.mp3') }}"
-            type="audio/mpeg">
-
-    </audio>
-
-
-    <img
-        src="https://file.garden/Z7MaCKzvmwy_BlES/Hecker_Cat.webp"
-        style="display: block; margin: auto;">
+            type="audio/mpeg"> </audio>
+    <img        src="https://file.garden/Z7MaCKzvmwy_BlES/Hecker_Cat.webp"        style="display: block; margin: auto;">
 
     <!-- JAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPTJAVASCRIPT -->
 
     <script>
+        function turnstileVerified(token) {console.log("Turnstile verified!");document.getElementById("bellButton").disabled = false;}
+let bellCount = 0;function playSound() {bellCount++;const word =bellCount === 1? "time": "times"; document.getElementById("bellCount").textContent =bellCount + " " + word;
+const sound =document.getElementById("buttonSound");sound.currentTime = 0;sound.play();}
+        function checkStatus() { fetch("/status").then(response => response.json()).then(data => {
 
+if (data.sos === true) {
+ document.getElementById("status").innerHTML ="🚨 SOS ALERT";
+document.getElementById("message").innerHTML ="THE SOS BUTTON HAS BEEN PRESSED!";
+ document.getElementById("time").innerHTML ="Time: " + data.time;
+}
+else {document.getElementById("status").innerHTML ="🟢 SAFE 🟢";document.getElementById("message").innerHTML =
+"System is monitoring.";
+document.getElementById("time").innerHTML ="No SOS detected.";}})
+.catch(error => {console.log("Error checking status:",error);});}
 
-        function turnstileVerified(token) {
-            console.log("Turnstile verified!");
-            document.getElementById("bellButton").disabled = false;
-
-        }
-
-
-        let bellCount = 0;
-
-        function playSound() {
-
-            // Add to counter
-            bellCount++;
-
-            // Proper grammar
-            const word =
-                bellCount === 1
-                ? "time"
-                : "times";
-
-            document.getElementById("bellCount").textContent =
-                bellCount + " " + word;
-
-            const sound =
-                document.getElementById("buttonSound");
-            sound.currentTime = 0;
-            sound.play();
-        }
-
-
-        // CHECK SOS STATUS
-
-        function checkStatus() {
-
-            fetch("/status")
-
-                .then(response => response.json())
-
-                .then(data => {
-
-                    if (data.sos === true) {
-
-                        document.getElementById("status").innerHTML =
-                            "🚨 SOS ALERT";
-
-                        document.getElementById("message").innerHTML =
-                            "THE SOS BUTTON HAS BEEN PRESSED!";
-
-                        document.getElementById("time").innerHTML =
-                            "Time: " + data.time;
-
-                    }
-
-                    else {
-
-                        document.getElementById("status").innerHTML =
-                            "🟢 SAFE";
-
-                        document.getElementById("message").innerHTML =
-                            "System is monitoring.";
-
-                        document.getElementById("time").innerHTML =
-                            "No SOS detected.";
-
-                    }
-
-                })
-
-                .catch(error => {
-
-                    console.log(
-                        "Error checking status:",
-                        error
-                    );
-
-                });
-
-        }
-
-
-        function resetSOS() {
-
-            fetch("/reset", {
-
-                method: "POST"
-
-            })
-
-            .then(() => {
-
-                checkStatus();
-
-            });
-
-        }
-
-        setInterval(checkStatus, 1000);
-
-        checkStatus();
-
-    </script>
-
-
-</body>
-
-</html>
+function resetSOS() {fetch("/reset", {method: "POST"}).then(() => {checkStatus();});}setInterval(checkStatus, 1000);checkStatus();
+</script></body></html>
