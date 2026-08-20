@@ -28,6 +28,28 @@ def get_device_type():
 
     else:
         return "💻 Computer/Other"
+
+def verify_turnstile():
+
+    token = request.form.get("cf-turnstile-response")
+
+    secret = os.environ.get("ASPIIRANTSS")
+
+    if not token or not secret:
+        return False
+
+    response = requests.post(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        data={
+            "secret": secret,
+            "response": token
+        },
+        timeout=10
+    )
+
+    result = response.json()
+
+    return result.get("success", False)
         
 @app.route("/")
 def home():
