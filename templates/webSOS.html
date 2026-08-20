@@ -77,6 +77,7 @@ function playSound() {
     sound.play();
 }
 </script>
+  <p>Bell count: <span id="bellCount">0 times</span></p>
         <script
   src="https://challenges.cloudflare.com/turnstile/v0/api.js"
   async
@@ -163,7 +164,22 @@ function playSound() {
  <div></div>   <<img src="https://file.garden/Z7MaCKzvmwy_BlES/VANDORF.png" style="display: block; margin: auto;"
 ></div>
     </script>
+<script>
+let bellCount = 0;
 
+function playSound() {
+    bellCount++;
+
+    const word = bellCount === 1 ? "time" : "times";
+
+    document.getElementById("bellCount").textContent =
+        `${bellCount} ${word}`;
+
+    const sound = document.getElementById("buttonSound");
+    sound.currentTime = 0;
+    sound.play();
+}
+</script>
 
       
 </body>
