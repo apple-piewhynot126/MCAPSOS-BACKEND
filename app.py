@@ -101,7 +101,63 @@ def home():
         visitor_number=visitor_number,
         visitor_ip=visitor_ip
     )
+@app.route("/sos", methods=["POST"])
+def sos():
+    global sos_active, sos_time, last_sos_time
 
+    print("🚨 SOS RECEIVED!")
+
+    current_time = time.time()
+
+    # Check whether we're still in the cooldown period
+    if current_time - last_sos_time < SOS_COOLDOWN:
+        print("⚠️ SOS ignored because cooldown is active.")
+
+        sos_active = True
+        return "SOS already active.", 200
+
+    # Record this SOS
+    last_sos_time = current_time
+    sos_active = True
+    sos_time = datetime.now().strftime("%H:%M:%S")
+
+    # Get Discord webhook from Render environment variables
+    discord_url = os.environ.get("SOSBOT")
+
+    if not discord_url:
+        print("❌ Discord webhook URL is missing!")
+        return "SOS received, but Discord is not configured.", 500
+
+    try:
+        response = requests.post(
+            discord_url,
+            json={
+                "content":
+                "🚨 **SOS ALERT!**\n"
+                "The emergency button has been pressed!"
+            },
+            headers={
+                "User-Agent": "MCA-SOS/1.0"
+            },
+            timeout=10
+        )
+
+        if response.status_code in [200, 204]:
+            print("✅ Discord notification sent!")
+            return "SOS received!", 200
+
+        elif response.status_code == 429:
+            print("⚠️ Discord rate limit reached.")
+            return "SOS received, but Discord is rate limited.", 429
+
+        else:
+            print("❌ Discord returned:", response.text)
+            return "SOS received, but Discord notification failed.", 500
+
+    except requests.exceptions.RequestException as e:
+        print("❌ Discord connection error:", e)
+        return "SOS received, but Discord could not be reached.", 500
+        
 @app.route("/random", methods=["POST"])
 def random_message():
 
