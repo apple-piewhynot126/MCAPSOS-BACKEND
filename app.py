@@ -243,7 +243,7 @@ def yesno_message():
 
     message = random.choice(messages)
 
-    discord_url = os.environ.get("SOSBOT")
+    discord_url = os.environ.get("POCKEYWEB")
 
     response = requests.post(
         discord_url,
