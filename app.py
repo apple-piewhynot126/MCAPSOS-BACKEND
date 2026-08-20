@@ -51,7 +51,7 @@ def sos():
             json={
                 "content":
                 "🚨 **SOS ALERT!**\n"
-                "The emergency button has been pressed!"
+                "You may remove chat by simply right-clicking your message and click remove message on the pop-up menu!"
             },
             headers={
                 "User-Agent": "MCA-SOS/1.0"
