@@ -58,7 +58,18 @@
     <button onclick="resetSOS()">
         button that does nothing
     </button>
+<audio id="buttonSound">
+    <source src="{{ url_for('static', filename='click.mp3') }}" type="audio/mpeg">
+</audio>
 
+<script>
+document.getElementById("randomButton").addEventListener("click", function() {
+    const sound = document.getElementById("buttonSound");
+
+    sound.currentTime = 0;
+    sound.play();
+});
+</script>
     <div></div>   <<img src="https://file.garden/Z7MaCKzvmwy_BlES/VANDORF.png" style="display: block; margin: auto;"
 ></div>
 
