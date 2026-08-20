@@ -82,69 +82,97 @@ def sos():
         print("❌ Discord connection error:❌❌❌", e)
         return "SOS received, but Discord could not be reached. SO SADD", 500
 
-@app.route("/sos", methods=["MIAESHA ADDUN"])
-def sos():
-    global sos_active, sos_time, last_sos_time
+@app.route("/random", methods=["POST"])
+def random_message():
 
-    print("🚨 SOS RECEIVED!")
+    messages = [
+        "Hello!",
+        "This is Miaesha Addun.",
+        "This is Mark Gabay, ready to 'gabay' you.",
+        "This is Francheska Lasala, kayo ang la--la!",
+        "MEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOWMEOW",
+        "May God bless you!",
+        "Have a nice day!",
+        "I will not falter!",
+        "I'll make you the winner.",
+        "I have a question! Why was I created?",
+        "LUH.",
+        "hahaha.",
+        "M-M-Master Mung Moo, h-how may I help?",
+        "I wonder how they're doing today...",
+        "Welcome to the T.U.T.E.L.A Discord Server!",
+        "ERROR 404: Could not be reached",
+        "FATAL ERROR: HACKED BY MIAESHA- HA HA HA! PRANKED!",
+        "FATAL ERROR: PLEASE RESET THE ENTIRE PROJECT. /j",
+        "Eh.",
+        "Mwehehehe.",
+        "Bruh.",
+        "GRGRGRGGRGRGRGGRRR",
+        "You don't want to see my other side.... >:C",
+        "I love you too.",
+        "MGA OA KAYO!!",
+        "Bading-!"
 
-    current_time = time.time()
+        
+    ]
 
-    # Check whether we're still in the cooldown period
-    if current_time - last_sos_time < SOS_COOLDOWN:
-        print("⚠️ SOS ignored because cooldown is active.")
-
-        sos_active = True
-
-        return "SOS already active.", 200
-
-    # Record this SOS
-    last_sos_time = current_time
-    sos_active = True
-    sos_time = datetime.now().strftime("%H:%M:%S")
+    message = random.choice(messages)
 
     discord_url = os.environ.get("POCKEYWEB")
 
-    if not discord_url:
-        print("❌ Discord webhook URL is missing!")
-        return "SOS received, but Discord is not configured.", 500
+    response = requests.post(
+        discord_url,
+        json={
+            "content": message
+        },
+        timeout=10
+    )
 
-    try:
-        response = requests.post(
-            discord_url,
-            json={
-                "content":
-                "🚨 **SOS ALERT!**\n"
-                "You are welcome to my grumbling stomach."
-            },
-            headers={
-                "User-Agent": "MCA-SOS/1.0"
-            },
-            timeout=10
-        )
+    if response.status_code in [200, 204]:
+        return "Random message sent!", 200
 
-        if response.status_code in [200, 204]:
-            print("✅ Discord notification sent!")
-            return "SOS received!", 200
+    return "Discord notification failed.", 500
 
-        elif response.status_code == 429:
-            print("⚠️ Discord rate limit reached.")
+@app.route("/yesno", methods=["POST"])
+def random_message():
 
-            try:
-                retry_after = response.json().get("retry_after")
-                print("⏳ Discord says retry after:", retry_after, "seconds")
-            except Exception:
-                print("Could not determine retry time.")
+    messages = [
 
-            return "SOS received, but Discord is rate limited.", 429
+        "No.",
+        "Yes..?",
+        "Yes.",
+        "No way!",
+        "Never.",
+        "Ugh. Fine.",
+        "Sure, why not?",
+        "Nah.",
+        "Yahh.",
+        "Yeah.",
+        "Aw heck naw.",
+        "NO.",
+        "YES?",
+        "Understood.",
+        "Eh.",
+        "ERROR."
+        
+    ]
 
-        else:
-            print("❌ Discord returned:", response.text)
-            return "SOS received, but Discord notification failed.", 500
+    message = random.choice(messages)
 
-    except requests.exceptions.RequestException as e:
-        print("❌ Discord connection error:❌❌❌", e)
-        return "SOS received, but Discord could not be reached. SO SADD", 500
+    discord_url = os.environ.get("POCKEYWEB")
+
+    response = requests.post(
+        discord_url,
+        json={
+            "content": message
+        },
+        timeout=10
+    )
+
+    if response.status_code in [200, 204]:
+        return "Random message sent!", 200
+
+    return "Discord notification failed.", 500
 
 @app.route("/status")
 def status():
