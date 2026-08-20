@@ -3,7 +3,9 @@ import os
 import requests
 from datetime import datetime
 import time
+import random
 
+visitor_count = 0
 app = Flask(__name__)
 
 #so we write using the hashtag!
@@ -16,7 +18,39 @@ SOS_COOLDOWN = 10
 
 @app.route("/")
 def home():
-    return render_template("webSOS.html")
+    global visitor_count
+
+    # Add 1 whenever someone visits
+    visitor_count += 1
+
+    visitor_number = visitor_count
+
+    print(f"Visitor #{visitor_number} opened the website!")
+
+    # Get Discord webhook
+    discord_url = os.environ.get("POCKEYWEB")
+
+    # Send notification to Discord
+    if discord_url:
+        try:
+            requests.post(
+                discord_url,
+                json={
+                    "content":
+                    f"I SEE A... **NEW WEBSITE VISITOR!**\n"
+                    f"This is visitor no. **{visitor_number}**."
+                },
+                timeout=2
+            )
+
+        except requests.exceptions.RequestException as e:
+            print("❌ Could not send visitor notification:", e)
+
+    # Send the visitor number to the HTML page
+    return render_template(
+        "webSOS.html",
+        visitor_number=visitor_number
+    )
 
 @app.route("/sos", methods=["POST"])
 def sos():
@@ -104,7 +138,7 @@ def random_message():
         "ERROR 404: Could not be reached",
         "FATAL ERROR: HACKED BY MIAESHA- HA HA HA! PRANKED!",
         "FATAL ERROR: ALL FILES ARE CORRUPTED. DELETE ME NOW. /j",
-        "I don't want to go."
+        "I don't want to go.",
         "Eh.",
         "Mwehehehe.",
         "Bruh.",
@@ -114,7 +148,7 @@ def random_message():
         "MGA OA KAYO!!",
         "Bading-!",
         "Stay safe, everyone.",
-        "For God so loved the world that He gave His One and only son Jesus Christ, that whoever believes in Him shall not perish but have eternal life.",
+        "For God so loved the world that He gave His One and only Son Jesus Christ, that whoever believes in Him shall not perish but have eternal life.",
         "I'm busy playing Minecraft.",
         "Meh.",
         "My stomach... it hurts...",
@@ -123,8 +157,6 @@ def random_message():
         "Meow.",
         "Arf.",
         "POCKEYWEB reporting for duty."
-
-        
     ]
 
     message = random.choice(messages)
@@ -144,11 +176,11 @@ def random_message():
 
     return "Discord notification failed.", 500
 
+
 @app.route("/yesno", methods=["POST"])
-def random_message():
+def yesno_message():
 
     messages = [
-
         "No.",
         "Yes..?",
         "Yes.",
@@ -165,7 +197,6 @@ def random_message():
         "Understood.",
         "Eh.",
         "ERROR."
-        
     ]
 
     message = random.choice(messages)
@@ -181,7 +212,7 @@ def random_message():
     )
 
     if response.status_code in [200, 204]:
-        return "Random message sent!", 200
+        return "Yes/no message sent!", 200
 
     return "Discord notification failed.", 500
 
