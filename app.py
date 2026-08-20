@@ -28,7 +28,7 @@ def home():
     print(f"Visitor #{visitor_number} opened the website!")
 
     # Get Discord webhook
-    discord_url = os.environ.get("POCKEYWEB")
+    discord_url = os.environ.get("SOSBOT")
 
     # Send notification to Discord
     if discord_url:
@@ -37,8 +37,8 @@ def home():
                 discord_url,
                 json={
                     "content":
-                    f"I SEE A... **NEW WEBSITE VISITOR!**\n"
-                    f"This is visitor no. **{visitor_number}**."
+                    f"I see a... **NEW WEBSITE VISITOR!**\n"
+                    f"They are visitor no. **{visitor_number}**."
                 },
                 timeout=2
             )
@@ -52,69 +52,52 @@ def home():
         visitor_number=visitor_number
     )
 
-@app.route("/sos", methods=["POST"])
-def sos():
-    global sos_active, sos_time, last_sos_time
+@app.route("/")
+def home():
+    global visitor_count
 
-    print("🚨 SOS RECEIVED!")
+    # Add 1 whenever someone visits
+    visitor_count += 1
+    visitor_number = visitor_count
 
-    current_time = time.time()
+    # Get the visitor's IP address
+    visitor_ip = request.headers.get(
+        "X-Forwarded-For",
+        request.remote_addr
+    )
 
-    # Check whether we're still in the cooldown period
-    if current_time - last_sos_time < SOS_COOLDOWN:
-        print("⚠️ SOS ignored because cooldown is active.")
+    # If multiple IPs exist, take the first one
+    if visitor_ip:
+        visitor_ip = visitor_ip.split(",")[0].strip()
 
-        sos_active = True
+    print(f"👀 Visitor #{visitor_number} opened the website!")
+    print(f"IP Address: {visitor_ip}")
 
-        return "SOS already active.", 200
-
-    # Record this SOS
-    last_sos_time = current_time
-    sos_active = True
-    sos_time = datetime.now().strftime("%H:%M:%S")
-
+    # Get Discord webhook
     discord_url = os.environ.get("POCKEYWEB")
 
-    if not discord_url:
-        print("❌ Discord webhook URL is missing!")
-        return "SOS received, but Discord is not configured.", 500
+    if discord_url:
+        try:
+            requests.post(
+                discord_url,
+                json={
+                    "content":
+                    f"I see a.... **NEW WEBSITE VISITOR!**\n"
+                    f"This is visitor no. **{visitor_number}**\n !"
+                    f"... and their IP Address: `{visitor_ip}`"
+                },
+                timeout=2
+            )
 
-    try:
-        response = requests.post(
-            discord_url,
-            json={
-                "content":
-                "🚨 **SOS ALERT!**\n"
-                "You may remove chat by simply right-clicking your message and click remove message on the pop-up menu!"
-            },
-            headers={
-                "User-Agent": "MCA-SOS/1.0"
-            },
-            timeout=10
-        )
+        except requests.exceptions.RequestException as e:
+            print("❌ Could not send visitor notification:", e)
 
-        if response.status_code in [200, 204]:
-            print("✅ Discord notification sent!")
-            return "SOS received!", 200
-
-        elif response.status_code == 429:
-            print("⚠️ Discord rate limit reached.")
-
-            try:
-                retry_after = response.json().get("retry_after")
-                print("⏳ Discord says retry after:", retry_after, "seconds")
-            except Exception:
-                print("Could not determine retry time.")
-
-            return "SOS received, but Discord is rate limited.", 429
-
-        else:
-            print("❌ Discord returned:", response.text)
-            return "SOS received, but Discord notification failed.", 500
-
-    except requests.exceptions.RequestException as e:
-        print("❌ Discord connection error:❌❌❌", e)
-        return "SOS received, but Discord could not be reached. SO SADD", 500
+    # Send information to the HTML page
+    return render_template(
+        "webSOS.html",
+        visitor_number=visitor_number,
+        visitor_ip=visitor_ip
+    )
 
 @app.route("/random", methods=["POST"])
 def random_message():
