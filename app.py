@@ -1,9 +1,11 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import os
 import requests
 from datetime import datetime
 import time
 import random
+
+
 
 visitor_count = 0
 app = Flask(__name__)
@@ -15,43 +17,18 @@ sos_time = None
 last_sos_time = 0
 SOS_COOLDOWN = 10
 
+def get_device_type():
+    user_agent = request.headers.get("User-Agent", "").lower()
 
-@app.route("/")
-def home():
-    global visitor_count
+    if "mobile" in user_agent or "android" in user_agent or "iphone" in user_agent:
+        return "📱 Phone"
 
-    # Add 1 whenever someone visits
-    visitor_count += 1
+    elif "ipad" in user_agent or "tablet" in user_agent:
+        return "📱 Tablet"
 
-    visitor_number = visitor_count
-
-    print(f"Visitor #{visitor_number} opened the website!")
-
-    # Get Discord webhook
-    discord_url = os.environ.get("SOSBOT")
-
-    # Send notification to Discord
-    if discord_url:
-        try:
-            requests.post(
-                discord_url,
-                json={
-                    "content":
-                    f"I see a... **NEW WEBSITE VISITOR!**\n"
-                    f"They are visitor no. **{visitor_number}**."
-                },
-                timeout=2
-            )
-
-        except requests.exceptions.RequestException as e:
-            print("❌ Could not send visitor notification:", e)
-
-    # Send the visitor number to the HTML page
-    return render_template(
-        "webSOS.html",
-        visitor_number=visitor_number
-    )
-
+    else:
+        return "💻 Computer/Other"
+        
 @app.route("/")
 def home():
     global visitor_count
@@ -73,26 +50,52 @@ def home():
     print(f"👀 Visitor #{visitor_number} opened the website!")
     print(f"IP Address: {visitor_ip}")
 
-    # Get Discord webhook
-    discord_url = os.environ.get("POCKEYWEB")
+    # -------------------------------
+    # WEBHOOK 1: Private channel
+    # -------------------------------
+    private_discord_url = os.environ.get("POCKEYWEB")
 
-    if discord_url:
+    if private_discord_url:
         try:
-            requests.post(
-                discord_url,
+            response = requests.post(
+                private_discord_url,
                 json={
                     "content":
-                    f"I see a.... **NEW WEBSITE VISITOR!**\n"
-                    f"This is visitor no. **{visitor_number}**\n !"
-                    f"... and their IP Address: `{visitor_ip}`"
+                    f" **NEW WEBSITE VISITOR!**\n"
+                    f"Visitor no.: **{visitor_number}**\n"
+                    f"IP Address: `{visitor_ip}`"
                 },
-                timeout=2
+                timeout=1
             )
 
-        except requests.exceptions.RequestException as e:
-            print("❌ Could not send visitor notification:", e)
+            print("Private webhook status:", response.status_code)
 
-    # Send information to the HTML page
+        except requests.exceptions.RequestException as e:
+            print("❌ Could not send private visitor notification:", e)
+
+    # -------------------------------
+    # WEBHOOK 2: POCKEYWEB channel
+    # -------------------------------
+    public_discord_url = os.environ.get("SOSBOT")
+
+    if public_discord_url:
+        try:
+            response = requests.post(
+                public_discord_url,
+                json={
+                    "content":
+                    f"I see a... **NEW WEBSITE VISITOR!**\n"
+                    f"They are visitor no. **{visitor_number}**!"
+                },
+                timeout=3
+            )
+
+            print("Public webhook status:", response.status_code)
+
+        except requests.exceptions.RequestException as e:
+            print("❌ Could not send public visitor notification:", e)
+
+    # Send information to the website
     return render_template(
         "webSOS.html",
         visitor_number=visitor_number,
@@ -184,7 +187,7 @@ def yesno_message():
 
     message = random.choice(messages)
 
-    discord_url = os.environ.get("POCKEYWEB")
+    discord_url = os.environ.get("SOSBOT")
 
     response = requests.post(
         discord_url,
