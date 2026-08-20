@@ -103,15 +103,26 @@ def random_message():
         "Welcome to the T.U.T.E.L.A Discord Server!",
         "ERROR 404: Could not be reached",
         "FATAL ERROR: HACKED BY MIAESHA- HA HA HA! PRANKED!",
-        "FATAL ERROR: PLEASE RESET THE ENTIRE PROJECT. /j",
+        "FATAL ERROR: ALL FILES ARE CORRUPTED. DELETE ME NOW. /j",
+        "I don't want to go."
         "Eh.",
         "Mwehehehe.",
         "Bruh.",
         "GRGRGRGGRGRGRGGRRR",
         "You don't want to see my other side.... >:C",
-        "I love you too.",
+        "I love you.",
         "MGA OA KAYO!!",
-        "Bading-!"
+        "Bading-!",
+        "Stay safe, everyone.",
+        "For God so loved the world that He gave His One and only son Jesus Christ, that whoever believes in Him shall not perish but have eternal life.",
+        "I'm busy playing Minecraft.",
+        "Meh.",
+        "My stomach... it hurts...",
+        "BLAHBLAHBLAHBLAH",
+        "Moooo",
+        "Meow.",
+        "Arf.",
+        "POCKEYWEB reporting for duty."
 
         
     ]
