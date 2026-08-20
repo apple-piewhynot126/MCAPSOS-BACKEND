@@ -131,5 +131,21 @@
 ></div>
     </script>
 
+      <script
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer>
+</script>
+
+<form action="/some-action" method="POST">
+
+    <div
+        class="cf-turnstile"
+        data-sitekey="ASPIIRANTKEY">
+    </div>
+
+    <button type="submit">Continue</button>
+</form>
+      
 </body>
 </html>
