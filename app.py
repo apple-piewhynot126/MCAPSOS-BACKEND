@@ -161,7 +161,14 @@ def sos():
 @app.route("/random", methods=["POST"])
 def random_message():
 
+    
+    if not verify_turnstile():
+
+        return "❌ Verification failed.", 403
+
+
     messages = [
+
         "Hello!",
         "This is Miaesha Addun.",
         "This is Mark Gabay, ready to 'gabay' you.",
@@ -221,6 +228,12 @@ def random_message():
 
 @app.route("/yesno", methods=["POST"])
 def yesno_message():
+
+    
+    if not verify_turnstile():
+
+        return "❌ Verification failed.", 403
+
 
     messages = [
         "No.",
