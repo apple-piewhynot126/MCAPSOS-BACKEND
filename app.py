@@ -19,25 +19,18 @@ SOS_COOLDOWN = 10
 
 def get_device_type():
     user_agent = request.headers.get("User-Agent", "").lower()
-
     if "mobile" in user_agent or "android" in user_agent or "iphone" in user_agent:
         return "📱 Phone"
-
     elif "ipad" in user_agent or "tablet" in user_agent:
         return "📱 Tablet"
-
     else:
         return "💻 Computer/Other"
 
 def verify_turnstile():
-
     token = request.form.get("cf-turnstile-response")
-
     secret = os.environ.get("ASPIIRANTSS")
-
     if not token or not secret:
         return False
-
     response = requests.post(
         "https://challenges.cloudflare.com/turnstile/v0/siteverify",
         data={
@@ -46,7 +39,6 @@ def verify_turnstile():
         },
         timeout=10
     )
-
     result = response.json()
 
     return result.get("success", False)
@@ -54,27 +46,21 @@ def verify_turnstile():
 @app.route("/")
 def home():
     global visitor_count
-
-    # Add 1 whenever someone visits
     visitor_count += 1
     visitor_number = visitor_count
-
-    # Get the visitor's IP address
     visitor_ip = request.headers.get(
         "X-Forwarded-For",
         request.remote_addr
     )
 
-    # If multiple IPs exist, take the first one
+
     if visitor_ip:
         visitor_ip = visitor_ip.split(",")[0].strip()
 
     print(f"👀 Visitor #{visitor_number} opened the website!")
     print(f"IP Address: {visitor_ip}")
 
-    # -------------------------------
     # WEBHOOK 1: Private channel
-    # -------------------------------
     private_discord_url = os.environ.get("POCKEYWEB")
     print("POCKEYWEB configured:", bool(private_discord_url))
     if private_discord_url:
@@ -95,9 +81,6 @@ def home():
         except requests.exceptions.RequestException as e:
             print("❌ Could not send private visitor notification:", e)
 
-    # -------------------------------
-    # WEBHOOK 2: POCKEYWEB channel
-    # -------------------------------
     public_discord_url = os.environ.get("SOSBOT")
         print("SOSBOT configured:", bool(private_discord_url))
     if public_discord_url:
@@ -111,13 +94,10 @@ def home():
                 },
                 timeout=10
             )
-
             print("Public webhook status:", response.status_code)
 
         except requests.exceptions.RequestException as e:
             print("❌ Could not send public visitor notification:", e)
-
-    # Send information to the website
     return render_template(
         "webSOS.html",
         visitor_number=visitor_number,
@@ -126,24 +106,18 @@ def home():
 @app.route("/sos", methods=["POST"])
 def sos():
     global sos_active, sos_time, last_sos_time
-
     print("🚨 SOS RECEIVED!")
-
     current_time = time.time()
 
-    # Check whether we're still in the cooldown period
     if current_time - last_sos_time < SOS_COOLDOWN:
         print("⚠️ SOS ignored because cooldown is active.")
 
         sos_active = True
         return "SOS already active.", 200
 
-    # Record this SOS
     last_sos_time = current_time
     sos_active = True
     sos_time = datetime.now().strftime("%H:%M:%S")
-
-    # Get Discord webhook from Render environment variables
     discord_url = os.environ.get("SOSBOT")
 
     if not discord_url:
@@ -167,23 +141,18 @@ def sos():
         if response.status_code in [200, 204]:
             print("✅ Discord notification sent!")
             return "SOS received!", 200
-
         elif response.status_code == 429:
             print("⚠️ Discord rate limit reached.")
             return "SOS received, but Discord is rate limited.", 429
-
         else:
             print("❌ Discord returned:", response.text)
             return "SOS received, but Discord notification failed.", 500
-
     except requests.exceptions.RequestException as e:
         print("❌ Discord connection error:", e)
         return "SOS received, but Discord could not be reached.", 500
         
 @app.route("/random", methods=["POST"])
 def random_message():
-
-
     messages = [
 
         "Hello!",
@@ -226,9 +195,7 @@ def random_message():
     ]
 
     message = random.choice(messages)
-
     discord_url = os.environ.get("POCKEYWEB")
-
     response = requests.post(
         discord_url,
         json={
@@ -236,16 +203,12 @@ def random_message():
         },
         timeout=10
     )
-
     if response.status_code in [200, 204]:
         return "Random message sent!", 200
-
     return "Discord notification failed.", 500
-
 
 @app.route("/yesno", methods=["POST"])
 def yesno_message():
-
 
     messages = [
         "No.",
@@ -265,11 +228,8 @@ def yesno_message():
         "Eh.",
         "ERROR."
     ]
-
     message = random.choice(messages)
-
     discord_url = os.environ.get("POCKEYWEB")
-
     response = requests.post(
         discord_url,
         json={
@@ -279,9 +239,8 @@ def yesno_message():
     )
 
     if response.status_code in [200, 204]:
-        return "Yes/no message sent!", 200
-
-    return "Discord notification failed.", 500
+        return "Yes/no message sent", 200
+    return "discord notification failed.", 500
 
 @app.route("/status")
 def status():
@@ -289,20 +248,14 @@ def status():
         "sos": sos_active,
         "time": sos_time
     })
-
-
 @app.route("/reset", methods=["POST"])
 def reset():
     global sos_active, sos_time
-
     sos_active = False
     sos_time = None
-
     print("SOS STATUS RESET")
 
     return "SOS reset!", 200
     
-
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
