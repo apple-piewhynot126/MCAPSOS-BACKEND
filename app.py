@@ -76,7 +76,7 @@ def home():
     # WEBHOOK 1: Private channel
     # -------------------------------
     private_discord_url = os.environ.get("POCKEYWEB")
-
+    print("POCKEYWEB configured:", bool(private_discord_url))
     if private_discord_url:
         try:
             response = requests.post(
@@ -87,7 +87,7 @@ def home():
                     f"Visitor no.: **{visitor_number}**\n"
                     f"IP Address: `{visitor_ip}`"
                 },
-                timeout=1
+                timeout=10
             )
 
             print("Private webhook status:", response.status_code)
@@ -99,7 +99,7 @@ def home():
     # WEBHOOK 2: POCKEYWEB channel
     # -------------------------------
     public_discord_url = os.environ.get("SOSBOT")
-
+        print("SOSBOT configured:", bool(private_discord_url))
     if public_discord_url:
         try:
             response = requests.post(
@@ -109,7 +109,7 @@ def home():
                     f"I see a... **NEW WEBSITE VISITOR!**\n"
                     f"They are visitor no. **{visitor_number}**!"
                 },
-                timeout=3
+                timeout=10
             )
 
             print("Public webhook status:", response.status_code)
