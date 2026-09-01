@@ -48,11 +48,11 @@ def home():
     global visitor_count
     visitor_count += 1
     visitor_number = visitor_count
+
     visitor_ip = request.headers.get(
         "X-Forwarded-For",
         request.remote_addr
     )
-
 
     if visitor_ip:
         visitor_ip = visitor_ip.split(",")[0].strip()
@@ -63,13 +63,14 @@ def home():
     # WEBHOOK 1: Private channel
     private_discord_url = os.environ.get("POCKEYWEB")
     print("POCKEYWEB configured:", bool(private_discord_url))
+
     if private_discord_url:
         try:
             response = requests.post(
                 private_discord_url,
                 json={
                     "content":
-                    f" **NEW WEBSITE VISITOR!**\n"
+                    f"**NEW WEBSITE VISITOR!**\n"
                     f"Visitor no.: **{visitor_number}**\n"
                     f"IP Address: `{visitor_ip}`"
                 },
@@ -81,8 +82,10 @@ def home():
         except requests.exceptions.RequestException as e:
             print("❌ Could not send private visitor notification:", e)
 
+    # WEBHOOK 2: Public/SOS channel
     public_discord_url = os.environ.get("SOSBOT")
-        print("SOSBOT configured:", bool(private_discord_url))
+    print("SOSBOT configured:", bool(public_discord_url))
+
     if public_discord_url:
         try:
             response = requests.post(
@@ -94,10 +97,12 @@ def home():
                 },
                 timeout=10
             )
+
             print("Public webhook status:", response.status_code)
 
         except requests.exceptions.RequestException as e:
             print("❌ Could not send public visitor notification:", e)
+
     return render_template(
         "webSOS.html",
         visitor_number=visitor_number,
