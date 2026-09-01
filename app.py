@@ -111,51 +111,102 @@ def home():
 @app.route("/sos", methods=["POST"])
 def sos():
     global sos_active, sos_time, last_sos_time
+
     print("🚨 SOS RECEIVED!")
+
     current_time = time.time()
 
+    # 10-second cooldown
     if current_time - last_sos_time < SOS_COOLDOWN:
         print("⚠️ SOS ignored because cooldown is active.")
-
-        sos_active = True
         return "SOS already active.", 200
 
     last_sos_time = current_time
     sos_active = True
     sos_time = datetime.now().strftime("%H:%M:%S")
+
     discord_url = os.environ.get("SOSBOT")
 
     if not discord_url:
         print("❌ Discord webhook URL is missing!")
         return "SOS received, but Discord is not configured.", 500
 
-    try:
-        response = requests.post(
-            discord_url,
-            json={
-                "content":
-                "🚨 **SOS ALERT!**\n"
-                "The emergency button has been pressed!"
-            },
-            headers={
-                "User-Agent": "MCA-SOS/1.0"
-            },
-            timeout=10
-        )
+    payload = {
+        "content":
+        "🚨 **SOS ALERT!**\n"
+        "The emergency button has been pressed!"
+    }
 
-        if response.status_code in [200, 204]:
-            print("✅ Discord notification sent!")
-            return "SOS received!", 200
-        elif response.status_code == 429:
-            print("⚠️ Discord rate limit reached.")
-            return "SOS received, but Discord is rate limited.", 429
-        else:
-            print("❌ Discord returned:", response.text)
-            return "SOS received, but Discord notification failed.", 500
-    except requests.exceptions.RequestException as e:
-        print("❌ Discord connection error:", e)
-        return "SOS received, but Discord could not be reached.", 500
-        
+    headers = {
+        "User-Agent": "MCA-SOS/1.0"
+    }
+
+    # Try up to 3 times
+    for attempt in range(3):
+        try:
+            response = requests.post(
+                discord_url,
+                json=payload,
+                headers=headers,
+                timeout=10
+            )
+
+            # SUCCESS
+            if response.status_code in [200, 204]:
+                print("✅ Discord notification sent!")
+                return "SOS received!", 200
+
+            # RATE LIMITED
+            elif response.status_code == 429:
+                print("⚠️ Discord rate limit reached.")
+
+                try:
+                    retry_after = response.json().get(
+                        "retry_after",
+                        2
+                    )
+                except ValueError:
+                    retry_after = 2
+
+                # Don't wait an unreasonable amount of time
+                retry_after = min(float(retry_after), 10)
+
+                print(
+                    f"⏳ Waiting {retry_after:.2f} seconds "
+                    f"before retry {attempt + 1}/3..."
+                )
+
+                time.sleep(retry_after)
+
+            # OTHER DISCORD ERROR
+            else:
+                print(
+                    "❌ Discord returned:",
+                    response.status_code,
+                    response.text
+                )
+                return (
+                    "SOS received, but Discord notification failed.",
+                    500
+                )
+
+        except requests.exceptions.RequestException as e:
+            print("❌Discord connection error:", e)
+
+            if attempt < 2:
+                print("Retrying in 2 seconds...")
+                time.sleep(2)
+            else:
+                return (
+                    "SOS received, but Discord could not be reached.",
+                    500
+                )
+
+    print("❌Discord still rate limited after 3 attempts.")
+    return (
+        "SOS received, but Discord is still rate limited.",
+        429
+    )
 @app.route("/random", methods=["POST"])
 def random_message():
     messages = [
