@@ -105,6 +105,7 @@ def sos():
     }
 
 # send one discord webhook
+    # SEND ONE DISCORD WEBHOOK
 
     def send_discord(webhook_url, payload, webhook_name):
 
@@ -125,52 +126,152 @@ def sos():
                     print(
                         f"✅ {webhook_name} notification sent!"
                     )
+
                     return True
 
                 # RATE LIMITED
                 elif response.status_code == 429:
-                    print(f"⚠️ {webhook_name} RATE LIMITED!")
-                    print("STATUS:", response.status_code)
-                    print("HEADERS:", dict(response.headers))
-                    print("BODY:", response.text)
+
+                    print(
+                        f"⚠️ {webhook_name} RATE LIMITED!"
+                    )
+
+                    print(
+                        "STATUS:",
+                        response.status_code
+                    )
+
+                    print(
+                        "HEADERS:",
+                        dict(response.headers)
+                    )
+
+                    print(
+                        "BODY:",
+                        response.text
+                    )
 
                     try:
+
                         data = response.json()
-                        print("RETRY_AFTER:", data.get("retry_after"))
-                        print("GLOBAL:", data.get("global"))
+
+                        retry_after = data.get(
+                            "retry_after"
+                        )
+
+                        is_global = data.get(
+                            "global"
+                        )
+
+                        print(
+                            "RETRY_AFTER:",
+                            retry_after
+                        )
+
+                        print(
+                            "GLOBAL:",
+                            is_global
+                        )
+
                     except ValueError:
-                        print("❌ Could not read Discord JSON response.")
+
+                        print(
+                            "❌ Could not read Discord JSON response."
+                        )
+
+                        retry_after = response.headers.get(
+                            "Retry-After"
+                        )
+
+                    # No retry time given
+                    if retry_after is None:
+
+                        print(
+                            "❌ Discord did not provide "
+                            "a retry time."
+                        )
+
+                        return False
+
+                    retry_after = float(
+                        retry_after
+                    )
+
+                    print(
+                        f"⏳ Discord says to wait "
+                        f"{retry_after:.2f} seconds."
+                    )
+
+                    # NEVER wait for hours
+                    MAX_RETRY_WAIT = 30
+
+                    if retry_after > MAX_RETRY_WAIT:
+
+                        print(
+                            f"🛑 Retry delay is too long "
+                            f"({retry_after:.2f} seconds)."
+                        )
+
+                        print(
+                            "🛑 Automatic retry cancelled."
+                        )
+
+                        return False
+
+                    # Retry if attempts remain
+                    if attempt < 2:
+
+                        print(
+                            f"⏳ Waiting "
+                            f"{retry_after:.2f} seconds "
+                            f"before retry..."
+                        )
+
+                        time.sleep(
+                            retry_after
+                        )
+
+                        continue
 
                     return False
 
                 # OTHER DISCORD ERROR
-                    else:
+                else:
+
                     print(
                         f"❌ {webhook_name} failed:",
                         response.status_code,
                         response.text
                     )
+
                     return False
 
-                    except requests.exceptions.RequestException as e:
-                        print(
-                            f"❌ {webhook_name} connection error:",
-                            e
-                            )
+            # CONNECTION ERROR
+            except requests.exceptions.RequestException as e:
 
-                    if attempt < 2:
-                        print(
-                            f"⏳ Connection failed. "
-                            f"Retrying in 2 seconds..."
-                        )
-                        time.sleep(2)
-                    else:
-                        return False
+                print(
+                    f"❌ {webhook_name} connection error:",
+                    e
+                )
+
+                if attempt < 2:
+
+                    print(
+                        "⏳ Connection failed. "
+                        "Retrying in 2 seconds..."
+                    )
+
+                    time.sleep(2)
+
+                else:
+
+                    return False
 
         print(
-            f"❌ {webhook_name} still rate limited "
-            f"after 3 attempts."
+            f"❌ {webhook_name} "
+            f"failed after 3 attempts."
         )
+
         return False
 
     sosbot_success = send_discord(
