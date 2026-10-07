@@ -17,12 +17,7 @@ sos_time = None
 last_sos_time = 0
 SOS_COOLDOWN = 10
 
-twop = random.choice([
-    "https://www.google.com/maps?q=14.6046146,121.0289289",
-    "https://www.google.com/maps?q=14.6046147,121.0289288",
-    "https://www.google.com/maps?q=14.6046145,121.0289290",
-    "GPS Location is unavailable!"
-])
+
 
 def get_device_type():
     user_agent = request.headers.get("User-Agent", "").lower()
@@ -117,6 +112,13 @@ def home():
     )
 @app.route("/sos", methods=["POST"])
 def sos():
+    twop = random.choice([
+    "https://www.google.com/maps?q=14.6046146,121.0289289",
+    "https://www.google.com/maps?q=14.6046147,121.0289288",
+    "https://www.google.com/maps?q=14.6046145,121.0289290",
+    "GPS Location is unavailable!"
+])
+    
     global sos_active, sos_time, last_sos_time
 
     print("🚨 SOS RECEIVED!")
