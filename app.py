@@ -17,7 +17,7 @@ sos_time = None
 last_sos_time = 0
 SOS_COOLDOWN = 10
 
-random_message = twop.choice([
+twop = random.choice([
     "https://www.google.com/maps?q=14.6046146,121.0289289",
     "https://www.google.com/maps?q=14.6046147,121.0289288",
     "https://www.google.com/maps?q=14.6046145,121.0289290",
@@ -150,7 +150,7 @@ def sos():
         "🚨 **SOS ALERT!**\n"
         "The emergency button has been pressed!\n"
         "User's location:\n"
-        + random_message
+        + twop
     }
 
 
