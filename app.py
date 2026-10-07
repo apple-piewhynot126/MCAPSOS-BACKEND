@@ -44,7 +44,75 @@ def verify_turnstile():
     result = response.json()
 
     return result.get("success", False)
-        
+
+
+@app.route("/")
+def home():
+    global visitor_count
+    visitor_count += 1
+    visitor_number = visitor_count
+
+    visitor_ip = request.headers.get(
+        "X-Forwarded-For",
+        request.remote_addr
+    )
+
+    if visitor_ip:
+        visitor_ip = visitor_ip.split(",")[0].strip()
+
+    print(f"👀 Visitor #{visitor_number} opened the website!")
+    print(f"IP Address: {visitor_ip}")
+
+    # WEBHOOK 1: Private channel
+    private_discord_url = os.environ.get("POCKEYWEB")
+    print("POCKEYWEB configured:", bool(private_discord_url))
+
+    if private_discord_url:
+        try:
+            response = requests.post(
+                private_discord_url,
+                json={
+                    "content":
+                    f"**NEW WEBSITE VISITOR!**\n"
+                    f"Visitor no.: **{visitor_number}**\n"
+                    f"IP Address: `{visitor_ip}`"
+                },
+                timeout=10
+            )
+
+            print("Private webhook status:", response.status_code)
+
+        except requests.exceptions.RequestException as e:
+            print("❌ Could not send private visitor notification:", e)
+
+    # WEBHOOK 2: Public/SOS channel
+    public_discord_url = os.environ.get("SOSBOT")
+    print("SOSBOT configured:", bool(public_discord_url))
+
+    if public_discord_url:
+        try:
+            response = requests.post(
+                public_discord_url,
+                json={
+                    "content":
+                    f"I see a... **NEW WEBSITE VISITOR!**\n"
+                    f"They are visitor no. **{visitor_number}**!"
+                },
+                timeout=10
+            )
+
+            print("Public webhook status:", response.status_code)
+
+        except requests.exceptions.RequestException as e:
+            print("❌ Could not send public visitor notification:", e)
+
+    return render_template(
+        "webSOS.html",
+        visitor_number=visitor_number,
+        visitor_ip=visitor_ip
+    )
+
+
 
 @app.route("/sos", methods=["POST"])
 def sos():
