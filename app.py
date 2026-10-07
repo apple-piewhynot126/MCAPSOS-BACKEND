@@ -112,20 +112,13 @@ def home():
     )
 @app.route("/sos", methods=["POST"])
 def sos():
-    twop = random.choice([
-    "https://www.google.com/maps?q=14.6046146,121.0289289",
-    "https://www.google.com/maps?q=14.6046147,121.0289288",
-    "https://www.google.com/maps?q=14.6046145,121.0289290",
-    "GPS Location is unavailable!"
-])
-    
     global sos_active, sos_time, last_sos_time
 
     print("🚨 SOS RECEIVED!")
 
     current_time = time.time()
 
-    # 10-second cooldown
+    # 10-second TUTELA cooldown
     if current_time - last_sos_time < SOS_COOLDOWN:
         print("⚠️ SOS ignored because cooldown is active.")
         return "SOS already active.", 200
@@ -134,19 +127,31 @@ def sos():
     sos_active = True
     sos_time = datetime.now().strftime("%H:%M:%S")
 
-    # Get TWO different webhook URLs
+    # webhooks urls
     discord_url_1 = os.environ.get("SOSBOT")
     discord_url_2 = os.environ.get("POCKEYWEB")
 
     # Check that both exist
     if not discord_url_1 or not discord_url_2:
         print("❌ One or both Discord webhook URLs are missing!")
-        return "SOS received, but Discord is not fully configured.", 500
+        return (
+            "SOS received, but Discord is not fully configured.",
+            500
+        )
 
     headers = {
         "User-Agent": "MCA-SOS/1.0"
     }
 
+    # Rand
+    twop = random.choice([
+        "https://www.google.com/maps?q=14.6046146,121.0289289",
+        "https://www.google.com/maps?q=14.6046147,121.0289288",
+        "https://www.google.com/maps?q=14.6046145,121.0289290",
+        "GPS Location is unavailable!"
+    ])
+
+    # MESSAGE 1 — SOSBOT
     payload_1 = {
         "content":
         "🚨 **SOS ALERT!**\n"
@@ -155,8 +160,7 @@ def sos():
         + twop
     }
 
-
-
+    # MESSAGE 2 — POCKEYWEB
     payload_2 = {
         "content":
         "🚨 **SOS ALERT!**\n"
@@ -164,54 +168,113 @@ def sos():
         "GPS Location is unavailable!"
     }
 
+# send one discord webhook
 
-    try:
-        response1 = requests.post(
-            discord_url_1,
-            json=payload_1,
-            headers=headers,
-            timeout=10
+    def send_discord(webhook_url, payload, webhook_name):
+
+        for attempt in range(3):
+
+            try:
+
+                response = requests.post(
+                    webhook_url,
+                    json=payload,
+                    headers=headers,
+                    timeout=10
+                )
+
+                # SUCCESS
+                if response.status_code in [200, 204]:
+
+                    print(
+                        f"✅ {webhook_name} notification sent!"
+                    )
+                    return True
+
+                # RATE LIMITED
+                elif response.status_code == 429:
+
+                    print(
+                        f"⚠️ {webhook_name} rate limited!"
+                    )
+                    try:
+                        retry_after = response.json().get(
+                            "retry_after",
+                            response.headers.get(
+                                "Retry-After",
+                                2
+                            )
+                        )
+                    except ValueError:
+                        retry_after = response.headers.get(
+                            "Retry-After",
+                            2
+                        )
+                    retry_after = float(retry_after)
+
+                    print(
+                        f"⏳ Discord says to wait "
+                        f"{retry_after:.2f} seconds."
+                    )
+                    if attempt < 2:
+                        print(
+                            f"⏳ Waiting before retry "
+                            f"{attempt + 2}/3..."
+                        )
+                        time.sleep(retry_after)
+                    continue
+
+                # OTHER DISCORD ERROR
+                else:
+                    print(
+                        f"❌ {webhook_name} failed:",
+                        response.status_code,
+                        response.text
+                    )
+                    return False
+
+            except requests.exceptions.RequestException as e:
+                print(
+                    f"❌ {webhook_name} connection error:",
+                    e
+                )
+
+                if attempt < 2:
+                    print(
+                        f"⏳ Connection failed. "
+                        f"Retrying in 2 seconds..."
+                    )
+                    time.sleep(2)
+                else:
+                    return False
+
+        print(
+            f"❌ {webhook_name} still rate limited "
+            f"after 3 attempts."
         )
+        return False
 
-        if response1.status_code in [200, 204]:
-            print("✅ SOSBOT notification sent!")
-        elif response1.status_code == 429:
-            print("⚠️ SOSBOT rate limited!")
-        else:
-            print(
-                "❌ SOSBOT failed:",
-                response1.status_code,
-                response1.text
-            )
+    sosbot_success = send_discord(
+        discord_url_1,
+        payload_1,
+        "SOSBOT"
+    )
 
-    except requests.exceptions.RequestException as e:
-        print("❌ SOSBOT connection error:", e)
-
-    try:
-        response2 = requests.post(
-            discord_url_2,
-            json=payload_2,
-            headers=headers,
-            timeout=10
-        )
-
-        if response2.status_code in [200, 204]:
-            print("✅ POCKEYWEB notification sent!")
-        elif response2.status_code == 429:
-            print("⚠️ POCKEYWEB rate limited!")
-        else:
-            print(
-                "❌ POCKEYWEB failed:",
-                response2.status_code,
-                response2.text
-            )
-
-    except requests.exceptions.RequestException as e:
-        print("❌ POCKEYWEB connection error:", e)
+    pockeyweb_success = send_discord(
+        discord_url_2,
+        payload_2,
+        "POCKEYWEB"
+    )
 
     print("🚨 SOS processing complete!")
 
-    return "SOS received!", 200
+    if sosbot_success and pockeyweb_success:
+        return "SOS received!", 200
+    elif sosbot_success or pockeyweb_success:
+        return "SOS received, but one Discord notification failed.", 200
+    else:
+
+        return "SOS received, but Discord notifications failed.", 200
 @app.route("/random", methods=["POST"])
 def random_message():
     messages = [
