@@ -188,13 +188,19 @@ def sos():
                     timeout=10
                 )
 
+    
+                print("================================")
+                print(f"🔎 {webhook_name} RESPONSE")
+                print("STATUS:", response.status_code)
+                print("HEADERS:", dict(response.headers))
+                print("BODY:", response.text[:1000])
+                print("================================")
+
                 # SUCCESS
                 if response.status_code in [200, 204]:
-
                     print(
                         f"✅ {webhook_name} notification sent!"
                     )
-
                     return True
 
                 # RATE LIMITED
@@ -363,6 +369,7 @@ def sos():
     else:
 
         return "SOS received, but Discord notifications failed.", 200
+        
 @app.route("/random", methods=["POST"])
 def random_message():
     messages = [
