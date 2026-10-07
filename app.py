@@ -45,71 +45,7 @@ def verify_turnstile():
 
     return result.get("success", False)
         
-@app.route("/")
-def home():
-    global visitor_count
-    visitor_count += 1
-    visitor_number = visitor_count
 
-    visitor_ip = request.headers.get(
-        "X-Forwarded-For",
-        request.remote_addr
-    )
-
-    if visitor_ip:
-        visitor_ip = visitor_ip.split(",")[0].strip()
-
-    print(f"👀 Visitor #{visitor_number} opened the website!")
-    print(f"IP Address: {visitor_ip}")
-
-    # WEBHOOK 1: Private channel
-    private_discord_url = os.environ.get("POCKEYWEB")
-    print("POCKEYWEB configured:", bool(private_discord_url))
-
-    if private_discord_url:
-        try:
-            response = requests.post(
-                private_discord_url,
-                json={
-                    "content":
-                    f"**NEW WEBSITE VISITOR!**\n"
-                    f"Visitor no.: **{visitor_number}**\n"
-                    f"IP Address: `{visitor_ip}`"
-                },
-                timeout=10
-            )
-
-            print("Private webhook status:", response.status_code)
-
-        except requests.exceptions.RequestException as e:
-            print("❌ Could not send private visitor notification:", e)
-
-    # WEBHOOK 2: Public/SOS channel
-    public_discord_url = os.environ.get("SOSBOT")
-    print("SOSBOT configured:", bool(public_discord_url))
-
-    if public_discord_url:
-        try:
-            response = requests.post(
-                public_discord_url,
-                json={
-                    "content":
-                    f"I see a... **NEW WEBSITE VISITOR!**\n"
-                    f"They are visitor no. **{visitor_number}**!"
-                },
-                timeout=10
-            )
-
-            print("Public webhook status:", response.status_code)
-
-        except requests.exceptions.RequestException as e:
-            print("❌ Could not send public visitor notification:", e)
-
-    return render_template(
-        "webSOS.html",
-        visitor_number=visitor_number,
-        visitor_ip=visitor_ip
-    )
 @app.route("/sos", methods=["POST"])
 def sos():
     global sos_active, sos_time, last_sos_time
@@ -193,36 +129,19 @@ def sos():
 
                 # RATE LIMITED
                 elif response.status_code == 429:
+    print(f"⚠️ {webhook_name} RATE LIMITED!")
+    print("STATUS:", response.status_code)
+    print("HEADERS:", dict(response.headers))
+    print("BODY:", response.text)
 
-                    print(
-                        f"⚠️ {webhook_name} rate limited!"
-                    )
-                    try:
-                        retry_after = response.json().get(
-                            "retry_after",
-                            response.headers.get(
-                                "Retry-After",
-                                2
-                            )
-                        )
-                    except ValueError:
-                        retry_after = response.headers.get(
-                            "Retry-After",
-                            2
-                        )
-                    retry_after = float(retry_after)
+    try:
+        data = response.json()
+        print("RETRY_AFTER:", data.get("retry_after"))
+        print("GLOBAL:", data.get("global"))
+    except ValueError:
+        print("❌ Could not read Discord JSON response.")
 
-                    print(
-                        f"⏳ Discord says to wait "
-                        f"{retry_after:.2f} seconds."
-                    )
-                    if attempt < 2:
-                        print(
-                            f"⏳ Waiting before retry "
-                            f"{attempt + 2}/3..."
-                        )
-                        time.sleep(retry_after)
-                    continue
+    return False
 
                 # OTHER DISCORD ERROR
                 else:
