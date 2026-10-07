@@ -129,22 +129,22 @@ def sos():
 
                 # RATE LIMITED
                 elif response.status_code == 429:
-    print(f"⚠️ {webhook_name} RATE LIMITED!")
-    print("STATUS:", response.status_code)
-    print("HEADERS:", dict(response.headers))
-    print("BODY:", response.text)
+                    print(f"⚠️ {webhook_name} RATE LIMITED!")
+                    print("STATUS:", response.status_code)
+                    print("HEADERS:", dict(response.headers))
+                    print("BODY:", response.text)
 
-    try:
-        data = response.json()
-        print("RETRY_AFTER:", data.get("retry_after"))
-        print("GLOBAL:", data.get("global"))
-    except ValueError:
-        print("❌ Could not read Discord JSON response.")
+                    try:
+                        data = response.json()
+                        print("RETRY_AFTER:", data.get("retry_after"))
+                        print("GLOBAL:", data.get("global"))
+                    except ValueError:
+                        print("❌ Could not read Discord JSON response.")
 
-    return False
+                    return False
 
                 # OTHER DISCORD ERROR
-                else:
+                    else:
                     print(
                         f"❌ {webhook_name} failed:",
                         response.status_code,
@@ -152,20 +152,20 @@ def sos():
                     )
                     return False
 
-            except requests.exceptions.RequestException as e:
-                print(
-                    f"❌ {webhook_name} connection error:",
-                    e
-                )
+                    except requests.exceptions.RequestException as e:
+                        print(
+                            f"❌ {webhook_name} connection error:",
+                            e
+                            )
 
-                if attempt < 2:
-                    print(
-                        f"⏳ Connection failed. "
-                        f"Retrying in 2 seconds..."
-                    )
-                    time.sleep(2)
-                else:
-                    return False
+                    if attempt < 2:
+                        print(
+                            f"⏳ Connection failed. "
+                            f"Retrying in 2 seconds..."
+                        )
+                        time.sleep(2)
+                    else:
+                        return False
 
         print(
             f"❌ {webhook_name} still rate limited "
